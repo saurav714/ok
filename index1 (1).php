@@ -3,33 +3,32 @@ include "mail_function.php";
 date_default_timezone_set("Asia/kolkata");
 $success = "";
 $error_message = "";
-$conn = mysqli_connect("localhost","root","","");
+$conn = mysqli_connect("localhost","root","","mail");
 if(!empty($_POST["submit_email"])) {
 	$result = mysqli_query($conn,"SELECT * FROM otp_expiry WHERE email='" . $_POST["email"] . "'");
 	$count  = mysqli_num_rows($result);
-	if($count>0) {
-		// generate OTP
+	if($count) {
 		$otp = rand(100000,999999);
-		// Send OTP
 		require_once("mail_function.php");
 		$mail_status = sendOTP($_POST["email"],$otp);
-		
 		if($mail_status == 1) {
 			$result = mysqli_query($conn,"INSERT INTO registered_users(otp,is_expired,create_at) VALUES ('" . $otp . "', 0, '" . date("Y-m-d H:i:s"). "')");
 			$current_id = mysqli_insert_id($conn);
-			if(!empty($current_id)) {
+			if(!empty($current_id))
+            {
 				$success=1;
 			}
 		}
-	} else {
+	} else 
+    {
 		$error_message = "Email not exists!";
 	}
 }
 if(!empty($_POST["submit_otp"])) {
-	$result = mysqli_query($conn,"SELECT * FROM otp_expiry WHERE otp='" . $_POST["otp"] . "' AND is_expired!=1 AND NOW() <= DATE_ADD(create_at, INTERVAL 15 MINUTE)");
+	$result = mysqli_query($conn,"SELECT * FROM registered_users WHERE otp='" . $_POST["otp"] . "' AND is_expired!=1 AND NOW() <= DATE_ADD(create_at, INTERVAL 15 MINUTE)");
 	$count  = mysqli_num_rows($result);
 	if(!empty($count)) {
-		$result = mysqli_query($conn,"UPDATE otp_expiry SET is_expired = 1 WHERE otp = '" . $_POST["otp"] . "'");
+		$result = mysqli_query($conn,"UPDATE registered_users SET is_expired = 1 WHERE otp = '" . $_POST["otp"] . "'");
 		$success = 2;	
 	} else {
 		$success =1;
@@ -109,7 +108,7 @@ body{
 			}
 			else {
 		?>
-		
+		<div class="tableheader">SARK</div>
 		<div class="tableheader">Enter Your Login Email</div>
 		<div class="tablerow"><input type="text" name="email" placeholder="Email" class="login-input" required></div>
 		<div class="tableheader"><input type="submit" name="submit_email" value="Submit" class="btnSubmit"></div>
